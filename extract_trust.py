@@ -12,7 +12,7 @@ def main():
         counts[i['trust']] += 1
 
     with open("trust.csv", "w") as f:
-        f.write("\n".join(f"{i}: {counts[i]}" for i in range(201)))
+        f.write("\n".join(f"{i},{counts[i]}" for i in range(201)))
 
 if __name__ == '__main__':
     main()
