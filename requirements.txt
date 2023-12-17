@@ -5,3 +5,4 @@ editdistance==0.6.2
 numpy==1.26.2
 opencv_python==4.8.1.78
 Requests==2.31.0
+onnxruntime==1.16.3
