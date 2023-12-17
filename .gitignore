@@ -1,0 +1,6 @@
+__pycache__
+config
+ambiguous_names.json
+data.json
+operators.json
+resources

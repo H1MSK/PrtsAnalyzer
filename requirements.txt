@@ -1,0 +1,7 @@
+adb_shell==0.4.4
+cnocr==2.2.4.2
+cnstd==1.2.3.5
+editdistance==0.6.2
+numpy==1.26.2
+opencv_python==4.8.1.78
+Requests==2.31.0
