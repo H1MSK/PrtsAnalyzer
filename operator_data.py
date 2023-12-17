@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import os
 from typing import List
@@ -7,33 +8,46 @@ import re
 import html
 import editdistance
 
+_logger = logging.getLogger("OperatorData")
 class OperatorData:
     url=r'https://prts.wiki/w/%E5%B9%B2%E5%91%98%E4%B8%80%E8%A7%88'
-    info_div_reg = re.compile(r'<div [^>]+ id="filter-data">.+?</div>')
+    info_div_reg = re.compile(r'(<div( data-[a-z_]+="[^"]*")+>.+?</div>)')
     data_reg = re.compile(r'data-[^=]+="[^"]*"')
 
     def __init__(self):
+        _logger.info("Downloading data from PRTS.wiki...")
         result = requests.get(OperatorData.url)
         if not result.ok:
             raise IOError()
-        matches = OperatorData.info_div_reg.findall(html.unescape(result.content.decode()))
+        _logger.info("Parsing data...")
         infos=[]
-        for match in matches:
-            match = match[1:].replace('></div>', '')
-            data: List[str] = OperatorData.data_reg.findall(match)
+        match_iter = OperatorData.info_div_reg.finditer(html.unescape(result.content.decode()))
+        for match in match_iter:
+            dom = match[0]
+            data: List[str] = OperatorData.data_reg.finditer(dom)
             info = {}
             for d in data:
-                t = d.split('=')
+                t = d[0].split('=')
                 k, v = t[0], t[1]
                 k = k.replace('data-', '')
                 v = v[1:-1]
+                if len(v) == 0:
+                    continue
                 info[k] = v
+            self._post_process_info(info)
             infos.append(info)
-        self.infos = {info['cn']: info for info in infos}
+        self.infos = {info['zh']: info for info in infos}
         self.ambig_names = {}
         if os.path.exists('ambiguous_names.json'):
             with open('ambiguous_names.json', "r", encoding='utf8') as f:
                 self.ambig_names = json.load(f)
+        _logger.info("Done.")
+
+    def _post_process_info(self, info):
+        if "tag" in info.keys():
+            info["tag"] = info["tag"].split(" ")
+        if "obtain_method" in info.keys():
+            info["obtain_method"] = info["obtain_method"].split(", ")
 
     def findOperatorName(self, ambig_name):
         if ambig_name in self.infos.keys():

@@ -10,13 +10,13 @@ from operator_data import operator_data
 
 _std = CnStd()
 
-_logger = logging.Logger("OperatorAnalyzer")
+_logger = logging.getLogger("OperatorAnalyzer")
 
 _all_ocr = CnOcr(rec_model_name='densenet_lite_136-gru')
 _num_ocr = CnOcr(rec_model_name='en_PP-OCRv3', det_model_name='en_PP-OCRv3_det')
 def _ocrText(cropped: np.ndarray):
     result = _all_ocr.ocr_for_single_line(cropped)
-    _logger.info(result)
+    _logger.debug(result)
     return result['text']
 
 def _ocrAndConvert(cropped: np.ndarray, func: Callable[[str], Any]):
@@ -35,9 +35,9 @@ def _ocrAndConvertToNumber(cropped: np.ndarray):
             raise ValueError
         return int(x[0])
     result = _num_ocr.ocr_for_single_line(cropped)
-    _logger.info(result)
+    _logger.debug(result)
     idx = converter(result['text'])
-    _logger.info(f"index = {idx}")
+    _logger.debug(f"index = {idx}")
     return idx
 
 def _ocrAndLookup(cropped: np.ndarray, list: list):
@@ -48,7 +48,7 @@ def _ocrAndLookup(cropped: np.ndarray, list: list):
             raise IndexError
         return idx
     idx = _ocrAndConvert(cropped, lookup)
-    _logger.info(f"index = {idx}")
+    _logger.debug(f"index = {idx}")
     return idx
 
 _name_fix = {
@@ -66,7 +66,7 @@ def _ocrAndMap(cropped: np.ndarray, dict: dict, keepIfNotFound: bool=False):
                 return text
             raise e
     value = _ocrAndConvert(cropped, mapping)
-    _logger.info(f"mapped = {value}")
+    _logger.debug(f"mapped = {value}")
     return value
 
 def _masteryDetect(cropped: np.ndarray):
@@ -175,19 +175,19 @@ def detect(img: np.ndarray):
                 info[k] = v[1](cropped, *v[2:])
                 break
             except Exception as e:
-                _logger.error(f"Error while trying to parse {k}(box={box})", stack_info=True)
                 count += 1
                 box = _positions[k][0]
                 if count >= 1:
+                    _logger.error(f"Error while trying to parse {k}(box={box})", stack_info=False)
                     break
 
     try:
         actual_name, trusted = operator_data.findOperatorName(info['name'])
     except KeyError as e:
-        print(f"Info has no name: {info}")
+        _logger.error(f"Info has no name: {info}")
         raise e
     if not trusted or actual_name == None:
-        x = input(f"Detected {info['name']}, Guessed {actual_name}. Input actual name if it is not correct, or \"r\" to retry:")
+        x = input(f"Detected {info['name']}, Guessed {actual_name}.\nLeave empty if it's correct, input actual name if it is not, or input \"r\" to retry:")
         if "r" == x:
             return None
         if len(x):
