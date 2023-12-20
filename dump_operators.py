@@ -17,7 +17,7 @@ def parse():
     return parser.parse_args(argv[1:])
 
 
-def main():
+def dump_operators():
     # for filename in os.listdir('resources'):
     #     img = cv2.imdecode(np.fromfile("resources/" + filename, dtype=np.uint8),-1)[:, :, :3]
     #     info = detect(img)
@@ -73,6 +73,5 @@ def main():
     operator_data.saveAmbiguousNames()
     logger.info("Done!")
 
-
 if __name__ == "__main__":
-    main()
+    dump_operators()

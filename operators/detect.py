@@ -28,10 +28,10 @@ def _ocrAndConvertToNumber(cropped: np.ndarray):
         exp = re.compile(r"\d+")
         x = exp.findall(text.replace('O', '0').replace('Q', '0'))
         if len(x) > 1:
-            _logger.error(f"{text} contains more than 1 number: {x}")
+            _logger.error(f"\"{text}\" contains more than 1 number: {x}")
             raise ValueError
         elif len(x) == 0:
-            _logger.error(f"{text} does not contain number")
+            _logger.error(f"\"{text}\" does not contain number")
             raise ValueError
         return int(x[0])
     result = _num_ocr.ocr_for_single_line(cropped)
